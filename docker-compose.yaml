@@ -1,6 +1,14 @@
 version: "3.9"
 services:
 
+  dns:
+    image: def38/bank-dns:${DEF38_DNS_VERSION}
+    dns:
+      - 192.168.42.7
+    networks:
+      simulated:
+        ipv4_address: 192.168.42.7
+
   web:
     image: def38/bank-web:${DEF38_WEB_VERSION}
     dns:
@@ -8,6 +16,14 @@ services:
     networks:
       simulated:
         ipv4_address: 192.168.42.2
+
+  api:
+    image: def38/bank-api:${DEF38_API_VERSION}
+    dns:
+      - 192.168.42.7
+    networks:
+      simulated:
+        ipv4_address: 192.168.42.3
 
   test:
     image: def38/bank-test:${DEF38_TEST_VERSION}
@@ -24,6 +40,14 @@ services:
     networks:
       simulated:
         ipv4_address: 192.168.42.5
+
+  cli:
+    image: def38/bank-cli:${DEF38_CLI_VERSION}
+    dns:
+      - 192.168.42.7
+    networks:
+      simulated:
+        ipv4_address: 192.168.42.6
 
 networks:
   simulated:
