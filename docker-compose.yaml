@@ -9,7 +9,7 @@ services:
       simulated:
         ipv4_address: 192.168.42.2
 
-   test:
+  test:
     image: def38/bank-test:${DEF38_TEST_VERSION}
     dns:
       - 192.168.42.7
