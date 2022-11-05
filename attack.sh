@@ -4,18 +4,26 @@ prog=$(basename $0)
   
 fn_help() {
 
-    echo ""
-    echo "Usage: $prog <subcommand> [options]"
-    echo "Commands:"
-    echo ""
-    echo "    workstation-setup   Setup Docker & utilities on the workstation"
-    echo "    upgrade             Upgrade attack environment to latest versions"
-    echo "    up                  Launch the DEF38 attack environment"
-    echo "    down                Stop the DEF38 attack environment"
-    echo ""
-    echo "For help with each subcommand run:"
-    echo "$prog <subcommand> -h|--help"
-    echo ""
+    echo '  ___  ___ ___ ____ ___    ___ ___  ___  _   _ ___  '
+    echo ' |   \| __| __|__ /( _ )  / __| _ \/ _ \| | | | _ \ '
+    echo ' | |) | _|| _| |_ \/ _ \ | (_ |   / (_) | |_| |  _/ '
+    echo ' |___/|___|_| |___/\___/  \___|_|_\\___/ \___/|_|   '
+    echo '                                                    '
+    echo -e "\e[1m\e[92m Attack toolkit provided by the DEF38 hacker group\e[0m"
+    echo ''
+
+    echo " Usage: $prog <subcommand> [options]"
+    echo ' Commands:'
+    echo ''
+    echo '    workstation-setup   Setup Docker & utilities on the workstation'
+    echo '    upgrade             Upgrade attack environment to latest versions'
+    echo '    up                  Launch the DEF38 attack environment'
+    echo '    down                Stop the DEF38 attack environment'
+    echo '    dns-setup           Change DNS servers, only launch after "up" command'
+    echo ''
+    echo ' For help with each subcommand run:'
+    echo " $prog <subcommand> -h|--help"
+    echo ''
 }
 
 fn_upgrade() {
@@ -37,8 +45,7 @@ fn_up() {
     export DEF38_SWIFT_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".swift" |  tr -d '\n')
     export DEF38_CLI_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".cli" |  tr -d '\n')
 
-    # Remove before flight
-    docker-compose -f $HOME/.def38/docker-compose.yaml up -d
+    docker compose -f $HOME/.def38/docker-compose.yaml up -d
 }
 
 fn_down() {
@@ -50,11 +57,15 @@ fn_down() {
     export DEF38_SWIFT_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".swift" |  tr -d '\n')
     export DEF38_CLI_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".cli" |  tr -d '\n')
 
-    # Remove before flight
-    docker-compose -f $HOME/.def38/docker-compose.yaml down
+    docker compose -f $HOME/.def38/docker-compose.yaml down
 }
 
 fn_workstation-setup() {
+
+    if [ "$EUID" -ne 0 ]
+        then echo "Use 'sudo' to launch this command (root access required)"
+        exit 1
+    fi
 
     echo "Installing Docker CE & utilities"
     echo -e "\e[1m\e[92m(1/5) Prepare workstation\e[0m"
@@ -78,6 +89,29 @@ fn_workstation-setup() {
     sudo usermod -aG docker $USER
     echo 'Disconnect from current Kali session and launch new terminal'
     echo 'docker compose version'
+}
+
+fn_dns-setup() {
+
+    if [ "$EUID" -ne 0 ]
+        then echo "Use 'sudo' to launch this command (root access required)"
+        exit 1
+    fi
+
+    echo ""
+    echo -e "\e[1m\e[92mDisabling auto-DNS provided by DHCP\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.ignore-auto-dns yes
+
+    echo ""
+    echo -e "\e[1m\e[92mChanging main DNS server to 192.168.42.7\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.dns "192.168.42.7 1.1.1.1"
+
+    echo ""
+    echo -e "\e[1m\e[92mRestarting Kali network manager\e[0m"
+    sudo systemctl restart NetworkManager
+
+    echo ""
+
 }
   
 subcommand=$1
