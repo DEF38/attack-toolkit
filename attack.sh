@@ -82,7 +82,7 @@ fn_up() {
 
     docker compose -f $HOME/.def38/docker-compose.yaml up -d
 
-    fn_dns_setup
+    fn_dns-setup
 }
 
 fn_down() {
