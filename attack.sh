@@ -19,7 +19,6 @@ fn_help() {
     echo '    upgrade             Upgrade attack environment to latest versions'
     echo '    up                  Launch the DEF38 attack environment'
     echo '    down                Stop the DEF38 attack environment'
-    echo '    dns-setup           Change DNS servers, only launch after "up" command'
     echo ''
     echo ' For help with each subcommand run:'
     echo " $prog <subcommand> -h|--help"
@@ -34,6 +33,42 @@ fn_upgrade() {
     wget -q -O "$HOME/.def38/docker-compose.yaml" https://raw.githubusercontent.com/DEF38/attack-toolkit/main/docker-compose.yaml
 }
 
+fn_dns-setup() {
+
+    echo ""
+    echo -e "\e[1m\e[92mDisabling auto-DNS provided by DHCP\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.ignore-auto-dns yes
+
+    echo ""
+    echo -e "\e[1m\e[92mChanging main DNS server to 192.168.42.7\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.dns "192.168.42.7 1.1.1.1"
+
+    echo ""
+    echo -e "\e[1m\e[92mRestarting Kali network manager\e[0m"
+    sudo systemctl restart NetworkManager
+
+    echo ""
+
+}
+
+fn_dns-disable() {
+
+    echo ""
+    echo -e "\e[1m\e[92mEnabling auto-DNS provided by DHCP\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.ignore-auto-dns no
+
+    echo ""
+    echo -e "\e[1m\e[92mChanging main DNS server to 1.1.1.1\e[0m"
+    sudo nmcli con mod "Wired connection 1" ipv4.dns "1.1.1.1"
+
+    echo ""
+    echo -e "\e[1m\e[92mRestarting Kali network manager\e[0m"
+    sudo systemctl restart NetworkManager
+
+    echo ""
+
+}
+
 fn_up() {
 
     fn_upgrade
@@ -46,6 +81,8 @@ fn_up() {
     export DEF38_CLI_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".cli" |  tr -d '\n')
 
     docker compose -f $HOME/.def38/docker-compose.yaml up -d
+
+    fn_dns_setup
 }
 
 fn_down() {
@@ -58,6 +95,8 @@ fn_down() {
     export DEF38_CLI_VERSION=$(cat $HOME/.def38/versions.json | jq -r ".cli" |  tr -d '\n')
 
     docker compose -f $HOME/.def38/docker-compose.yaml down
+
+    fn_dns-disable
 }
 
 fn_workstation-setup() {
@@ -88,30 +127,7 @@ fn_workstation-setup() {
     echo -e "\e[1m\e[92m(5/5) Post-installation steps\e[0m"
     sudo usermod -aG docker $USER
     echo 'Disconnect from current Kali session and launch new terminal'
-    echo 'docker compose version'
-}
-
-fn_dns-setup() {
-
-    if [ "$EUID" -ne 0 ]
-        then echo "Use 'sudo' to launch this command (root access required)"
-        exit 1
-    fi
-
-    echo ""
-    echo -e "\e[1m\e[92mDisabling auto-DNS provided by DHCP\e[0m"
-    sudo nmcli con mod "Wired connection 1" ipv4.ignore-auto-dns yes
-
-    echo ""
-    echo -e "\e[1m\e[92mChanging main DNS server to 192.168.42.7\e[0m"
-    sudo nmcli con mod "Wired connection 1" ipv4.dns "192.168.42.7 1.1.1.1"
-
-    echo ""
-    echo -e "\e[1m\e[92mRestarting Kali network manager\e[0m"
-    sudo systemctl restart NetworkManager
-
-    echo ""
-
+    echo 'Test with "docker compose version"'
 }
   
 subcommand=$1
