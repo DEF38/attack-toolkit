@@ -1,6 +1,6 @@
 {
   "api": "v1",
-  "cli": "v3",
+  "cli": "v4",
   "dns": "v1",
   "swift": "v1",
   "test": "v1",

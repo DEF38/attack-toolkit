@@ -106,6 +106,8 @@ fn_workstation-setup() {
         exit 1
     fi
 
+    echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+
     echo "Installing Docker CE & utilities"
     echo -e "\e[1m\e[92m(1/5) Prepare workstation\e[0m"
     sudo apt remove docker docker-engine docker.io containerd runc 2> /dev/null
