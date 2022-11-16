@@ -1,9 +1,8 @@
 {
   "api": "v1",
-  "cli": "v4",
+  "cli": "v5",
   "dns": "v1",
   "swift": "v1",
   "test": "v1",
   "web": "v1"
 }
-
